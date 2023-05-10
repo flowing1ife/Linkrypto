@@ -56,10 +56,12 @@ const WalletTokenDetailTable = () => {
     return (
         <>
             <SubTemplateBlockVertical style={{marginTop:"20px"}}>
-                <div style={{ fontSize: "14px", color: "#657795" }}>
-                    <h5 class="mb-1 text-xl font-medium text-gray-500 dark:text-white">
+                <div style={{ fontSize: "17px", color: "#657795" }}>
+                    <h5 className="mb-2 text-1xl font-bold tracking-tight text-gray-800 dark:text-white">
                         Tokens
-                        <span style={{float:"right", fontSize:"16px", marginRight:"5px"}}>$ {assetState.token.totalValue.toLocaleString(1)}</span>
+                        <span style={{float:"right", fontSize:"16px", marginRight:"5px"}} className="font-medium tracking-tight text-gray-500 dark:text-white">
+                            $ {assetState.token.totalValue.toLocaleString(1)}
+                        </span>
                     </h5>
                     <span style={{ fontSize: "12px" }}>
                     </span>
@@ -76,7 +78,7 @@ const WalletTokenDetailTable = () => {
                         <Tr>
                             <Td>
                             <div class="flex items-center space-x-4">
-                                <img class="w-10 h-10 rounded-full" src={icons["KLAY"]} alt=""/>
+                                <img class="w-8 h-8 rounded-full" src={icons["KLAY"]} alt=""/>
                                 <div class="font-medium dark:text-white">
                                     <div>Klay</div>
                                     <div class="text-sm text-gray-500 dark:text-gray-400">{token.balance.toFixed(3)}</div>
@@ -94,29 +96,32 @@ const WalletTokenDetailTable = () => {
                 assetState.klayswap.totalValue === 0 ?
                 <></> :
                 <SubTemplateBlockVertical style={{marginTop:"20px"}}>
-                <div style={{ fontSize: "15px", color: "#657795" }}>
-                    <h5 class="mb-1 text-xl font-medium text-gray-500 dark:text-white">
-                        <div class="flex items-center" style={{justifyContent:"space-between"}}>
-                            <div>
-                                <img class="w-10 h-10 p-1 rounded-full ring-1 ring-gray-100 dark:ring-gray-100" src={icons["Klayswap"]} alt="logo" />
-                            </div>
-                            <div>
-                            <span style={{float:"right", fontSize:"16px", marginRight:"5px"}}>$ {assetState.token.totalValue.toLocaleString(1)}</span>
-                            </div>
-                        </div>
-                    </h5>
+
+                <div class="flex items-center space-x-4" style={{justifyContent:"space-between"}}>
+                    <span class="flex items-center">
+                        <img class="w-10 h-10 rounded-full" src={icons["Klayswap"]} alt=""/>
+                        <span className="ml-2 text-1xl font-medium tracking-tight text-gray-800 dark:text-white">Klayswap</span>
+                    </span>
+                    <span style={{float:"right", fontSize:"16px", marginRight:"5px"}} className="font-medium tracking-tight text-gray-500 dark:text-white">
+                            $ {assetState.token.totalValue.toLocaleString(1)}
+                        </span>
+
+                {/* <div class="text-sm text-gray-500 dark:text-gray-400">$ 0</div> */}
+
                 </div>
 
                     {assetState.klayswap.stakedKSP.balance === 0 ?
                     <></> :
                     <>
-                    <span style={{fontSize:"13px", marginTop:"15px", color:"gray"}}>Staking</span>
+                    <h2 class="text-1xl font-medium dark:text-white mt-5">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">Staking</span>
+                    </h2>
 
                     <Table>
                         <Thead>
                             <Th>Token</Th>
                             <Th>unlockedDate</Th>
-                            <Thr>Balance ($)</Thr>
+                            <Thr>Balance</Thr>
                             <Thrr>Value ($)</Thrr>
                         </Thead>
                         <tbody>
@@ -135,7 +140,9 @@ const WalletTokenDetailTable = () => {
                     <></>
                     :
                     <>
-                    <span style={{fontSize:"13px", marginTop:"15px", color:"gray"}}>Voting Power</span>
+                    <h2 class="text-1xl font-medium dark:text-white mt-5">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">Voting</span>
+                    </h2>
 
                     <Table>
                         <Thead>
@@ -156,13 +163,14 @@ const WalletTokenDetailTable = () => {
                     <></>
                     :
                     <>
-                    <span style={{fontSize:"13px", marginTop:"15px", color:"gray"}}>Single Deposit</span>
-
+                    <h2 class="text-1xl font-medium dark:text-white mt-5">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">단일예치</span>
+                    </h2>
                     
                     <Table>
                         <Thead>
                             <Th>Token</Th>
-                            <Thr>Balance ($)</Thr>
+                            <Thr>Balance</Thr>
                             <Thrr>Value ($)</Thrr>
                         </Thead>
                         <tbody>
@@ -183,7 +191,9 @@ const WalletTokenDetailTable = () => {
                     <></>
                     :
                     <>
-                <span style={{fontSize:"13px", marginTop:"15px", color:"gray"}}>Pair Deposit</span>
+                    <h2 class="text-1xl font-medium dark:text-white mt-5">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">페어예치</span>
+                    </h2>
 
                 <Table>
                     <Thead>
@@ -195,8 +205,10 @@ const WalletTokenDetailTable = () => {
                     {assetState.klayswap.pairPool.map((res)=>(
                         <Tr>
                             <Td>
-                                <Imgs src={icons[res.pairList[0]]} alt="logo" height="18px" width="18px" style={{ padding: "1px", verticalAlign: "middle", borderRadius: "15px" }} />
-                                <Imgs src={icons[res.pairList[1]]} alt="logo" height="18px" width="18px" style={{ padding: "1px", verticalAlign: "middle", borderRadius: "15px" }} />
+                                <div style={{display:"flex", flexDirection:"row"}}>
+                                    <Imgs src={icons[res.pairList[0]]} alt="logo" height="25px" width="px" style={{ padding: "1px", verticalAlign: "middle", borderRadius: "15px" }} />
+                                    <Imgs src={icons[res.pairList[1]]} alt="logo" height="25px" width="25px" style={{ padding: "1px", verticalAlign: "middle", borderRadius: "15px" }} />
+                                </div>
                             </Td>
                             <Tdr>
                                 {res.balance[0]} {res.pairList[0]} + {res.balance[1]} {res.pairList[1]}
@@ -209,12 +221,14 @@ const WalletTokenDetailTable = () => {
                 </>            
                 }
 
-             <span style={{fontSize:"13px", marginTop:"15px", color:"gray"}}>Plus Deposit</span>
+                <h2 class="text-1xl font-medium dark:text-white mt-5">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">플러스예치</span>
+                </h2>
 
                 <Table>
                     <Thead>
                         <Th>Pool</Th>
-                        <Thr>Balance ($)</Thr>
+                        <Thr>Balance</Thr>
                         <Thrr>Value ($)</Thrr>
                     </Thead>
                     <tbody>
@@ -293,7 +307,7 @@ const Thr = styled.th`
     color: rgba(0,0,0,.87);
     padding-right: 70px;
     font-style: none;
-    font-weight: 700;
+    font-weight: 500;
     text-transform: none;
     border-bottom: 1px solid rgba(34,36,38,.1);
     border-left: none;
@@ -311,7 +325,7 @@ const Th = styled.th`
     color: rgba(0,0,0,.87);
     padding: 12px 29px!important;
     font-style: none;
-    font-weight: 700;
+    font-weight: 500;
     text-transform: none;
     border-bottom: 1px solid rgba(34,36,38,.1);
     border-left: none;
@@ -328,7 +342,7 @@ const Thrr = styled.th`
     color: rgba(0,0,0,.87);
     padding: 12px 29px!important;
     font-style: none;
-    font-weight: 700;
+    font-weight: 500;
     text-transform: none;
     border-bottom: 1px solid rgba(34,36,38,.1);
     border-left: none;
