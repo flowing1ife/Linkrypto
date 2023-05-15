@@ -1,0 +1,57 @@
+{
+  "isInvested": true,
+  "totalInvested": 0,
+  "totalDailyIncome": 0,
+  "totalApr": 0,
+  "klayInvestedinKlay": 0,
+  "klayInvestedinKRW": 0,
+  "klayDailyIncomeKlay": 0,
+  "klayDailyIncomeKRW": 0,
+  "KlayTotalApr": 0,
+  "oUsdtInvestedinoUsdt": 0,
+  "oUsdtInvestedinKRW": 0,
+  "oUsdtDailyIncomeoUsdt": 0,
+  "oUsdtDailyIncomeKRW": 0,
+  "oUsdtTotalApr": 0,
+  "klayProtocolCategorySummary": [
+    { "Swapscanner": 0 },
+    { "hashed-Ozys (Klaystation)": 0 },
+    { "Stake.ly": 0 },
+    { "Kokoa Finance": 0 },
+    { "Klayswap": 9 }
+  ],
+  "oUsdtProtocolCategorySummary": [],
+  "totalInvestCategory": { "klayStaking": 0, "ousdtStaking": 0 },
+  "klayStaking": { "Min": 0, "Max": 0, "balance": 0 },
+  "oUsdtStaking": {
+    "Min": 0,
+    "Max": 0,
+    "balance": 0
+  },
+  "klayAprStatus": { "myStatus": 0, "maxApr": 0 },
+  "oUsdtAprStatus": { "myStatus": 0, "maxApr": 0 },
+  "klayProtocolCategory": [
+    {
+      "poolName": "hashed-Ozys (Klaystation)",
+      "contractAddress": "0xe33337cb6fbb68954fe1c3fde2b21f56586632cd",
+      "category": "노드 스테이킹",
+      "investedKlay": 0,
+      "tvlKLAY": 0,
+      "tvlKRW": 0,
+      "apr": 0,
+      "liqToken": "sKLAY",
+      "unStakingOption": ["스왑", "7일대기"]
+    }
+  ],
+  "oUsdtProtocolCategory": [
+    {
+      "poolName": "Kleva",
+      "contractAddress": "0xaee24956f6ccc58deac3c49ddb65a5c72d8bdd30",
+      "category": "빌려주기",
+      "investedoUSDT": 0,
+      "tvloUSDT": 0,
+      "tvlKRW": 0,
+      "apr": 0
+    }
+  ]
+}

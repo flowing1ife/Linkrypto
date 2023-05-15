@@ -128,7 +128,13 @@ function Topnav () {
                             <svg aria-hidden="true" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                             }
 
-                        <span style={{marginLeft:"10px"}}>{userAccount.slice(0,5)}...{userAccount.slice(userAccount.length-4,userAccount.length)}</span>
+                        <span style={{marginLeft:"10px"}}>
+                            {userAccount === undefined ? 
+                            "wallet address"
+                            :
+                            userAccount.slice(0,5) + "..."+ userAccount.slice(userAccount.length-4,userAccount.length)
+                            }
+                        </span>
                     </button>
                     }
 
