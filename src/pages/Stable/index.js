@@ -78,103 +78,103 @@ function StableManage() {
     ]
   })
 
-useEffect(() => {
+  useEffect(() => {
 
-  console.log("userAccount",userAccount)
-  console.log("localStorage.getItem.address", localStorage.getItem("address") === "")
+    console.log("userAccount",userAccount)
+    console.log("localStorage.getItem.address", localStorage.getItem("address") === "")
 
-  // 1) local storage address check
-  // null 이면 아예 접속한 적이 없는 것. // "" 이면 접속했엇으나 지갑해제한것.
+    // 1) local storage address check
+    // null 이면 아예 접속한 적이 없는 것. // "" 이면 접속했엇으나 지갑해제한것.
 
-  // 이 상황이라면 아무 것도 안한다. 
-  
-  // address 가 바뀌었다.
-  if(userAccount === ""){ // 아무것도 아닌 거라면,
-    // target 주소가 아무 것도 아닌 것이라면 아무 것도 안한다.
-    setInvestedAsset({
-      "isInvested": true,
-      "totalInvested": 0,
-      "totalDailyIncome": 0,
-      "totalApr": 0,
-      "klayInvestedinKlay": 0,
-      "klayInvestedinKRW": 0,
-      "klayDailyIncomeKlay": 0,
-      "klayDailyIncomeKRW": 0,
-      "KlayTotalApr": 0,
-      "oUsdtInvestedinoUsdt": 0,
-      "oUsdtInvestedinKRW": 0,
-      "oUsdtDailyIncomeoUsdt": 0,
-      "oUsdtDailyIncomeKRW": 0,
-      "oUsdtTotalApr": 0,
-      "klayProtocolCategorySummary": [
-        { "Swapscanner": 0 },
-        { "hashed-Ozys (Klaystation)": 0 },
-        { "Stake.ly": 0 },
-        { "Kokoa Finance": 0 },
-        { "Klayswap": 9 }
-      ],
-      "oUsdtProtocolCategorySummary": [],
-      "totalInvestCategory": { "klayStaking": 0, "ousdtStaking": 0 },
-      "klayStaking": { "Min": 0, "Max": 0, "balance": 0 },
-      "oUsdtStaking": {
-        "Min": 0,
-        "Max": 0,
-        "balance": 0
-      },
-      "klayAprStatus": { "myStatus": 0, "maxApr": 0 },
-      "oUsdtAprStatus": { "myStatus": 0, "maxApr": 0 },
-      "klayProtocolCategory": [
-        {
-          "poolName": "hashed-Ozys (Klaystation)",
-          "contractAddress": "0xe33337cb6fbb68954fe1c3fde2b21f56586632cd",
-          "category": "노드 스테이킹",
-          "investedKlay": 0,
-          "tvlKLAY": 0,
-          "tvlKRW": 0,
-          "apr": 0,
-          "liqToken": "sKLAY",
-          "unStakingOption": ["스왑", "7일대기"]
+    // 이 상황이라면 아무 것도 안한다. 
+    
+    // address 가 바뀌었다.
+    if(userAccount === ""){ // 아무것도 아닌 거라면,
+      // target 주소가 아무 것도 아닌 것이라면 아무 것도 안한다.
+      setInvestedAsset({
+        "isInvested": true,
+        "totalInvested": 0,
+        "totalDailyIncome": 0,
+        "totalApr": 0,
+        "klayInvestedinKlay": 0,
+        "klayInvestedinKRW": 0,
+        "klayDailyIncomeKlay": 0,
+        "klayDailyIncomeKRW": 0,
+        "KlayTotalApr": 0,
+        "oUsdtInvestedinoUsdt": 0,
+        "oUsdtInvestedinKRW": 0,
+        "oUsdtDailyIncomeoUsdt": 0,
+        "oUsdtDailyIncomeKRW": 0,
+        "oUsdtTotalApr": 0,
+        "klayProtocolCategorySummary": [
+          { "Swapscanner": 0 },
+          { "hashed-Ozys (Klaystation)": 0 },
+          { "Stake.ly": 0 },
+          { "Kokoa Finance": 0 },
+          { "Klayswap": 9 }
+        ],
+        "oUsdtProtocolCategorySummary": [],
+        "totalInvestCategory": { "klayStaking": 0, "ousdtStaking": 0 },
+        "klayStaking": { "Min": 0, "Max": 0, "balance": 0 },
+        "oUsdtStaking": {
+          "Min": 0,
+          "Max": 0,
+          "balance": 0
+        },
+        "klayAprStatus": { "myStatus": 0, "maxApr": 0 },
+        "oUsdtAprStatus": { "myStatus": 0, "maxApr": 0 },
+        "klayProtocolCategory": [
+          {
+            "poolName": "hashed-Ozys (Klaystation)",
+            "contractAddress": "0xe33337cb6fbb68954fe1c3fde2b21f56586632cd",
+            "category": "노드 스테이킹",
+            "investedKlay": 0,
+            "tvlKLAY": 0,
+            "tvlKRW": 0,
+            "apr": 0,
+            "liqToken": "sKLAY",
+            "unStakingOption": ["스왑", "7일대기"]
+          }
+        ],
+        "oUsdtProtocolCategory": [
+          {
+            "poolName": "Kleva",
+            "contractAddress": "0xaee24956f6ccc58deac3c49ddb65a5c72d8bdd30",
+            "category": "빌려주기",
+            "investedoUSDT": 0,
+            "tvloUSDT": 0,
+            "tvlKRW": 0,
+            "apr": 0
+          }
+        ]
+      })
+
+    } else if (userAccount !== undefined || userAccount !== "") { // 지갑 주소가 로딩 되었는데,
+
+      console.log("지갑주소가 바뀜", userAccount)
+
+      if(localStorage.getItem("address") === localStorage.getItem("lastAddress")){ // 마지막에 불러온 주소랑 상태 주소가 같은가?
+        console.log("마지막 지갑 주소랑 같음", userAccount)
+
+        const time = Date.now();
+
+        if((time - localStorage.getItem("assetTimestamp")) > 60000){ // 불러온 이력이 있다면 불러온지 1분이 넘었는가?
+          loadAsset() // 그러면 다시 자산을 불러온다.
+
+        } else { // 불러온 이력이 없거나 1분 이내라면 기존 데이터를 불러온다.
+          setInvestedAsset(JSON.parse(localStorage.getItem("assetList"))) 
         }
-      ],
-      "oUsdtProtocolCategory": [
-        {
-          "poolName": "Kleva",
-          "contractAddress": "0xaee24956f6ccc58deac3c49ddb65a5c72d8bdd30",
-          "category": "빌려주기",
-          "investedoUSDT": 0,
-          "tvloUSDT": 0,
-          "tvlKRW": 0,
-          "apr": 0
-        }
-      ]
-    })
 
-  } else if (userAccount !== undefined || userAccount !== "") { // 지갑 주소가 로딩 되었는데,
-
-    console.log("지갑주소가 바뀜", userAccount)
-
-    if(localStorage.getItem("address") === localStorage.getItem("lastAddress")){ // 마지막에 불러온 주소랑 상태 주소가 같은가?
-      console.log("마지막 지갑 주소랑 같음", userAccount)
-
-      const time = Date.now();
-
-      if((time - localStorage.getItem("assetTimestamp")) > 60000){ // 불러온 이력이 있다면 불러온지 1분이 넘었는가?
-        loadAsset() // 그러면 다시 자산을 불러온다.
-
-      } else { // 불러온 이력이 없거나 1분 이내라면 기존 데이터를 불러온다.
-        setInvestedAsset(JSON.parse(localStorage.getItem("assetList"))) 
+      } else { // 그러면 다시 자산을 불러온다.
+        loadAsset() 
       }
-
-    } else { // 그러면 다시 자산을 불러온다.
-      loadAsset() 
+    
     }
-  
-  }
 
 
 
 
-}, [userAccount])
+  }, [userAccount])
 
 const loadAsset = async () => {
 
@@ -183,6 +183,19 @@ const loadAsset = async () => {
   const time = Date.now();
 
   const assetList = await axios.get(`https://wp22qg4khl.execute-api.ap-northeast-2.amazonaws.com/v1/service/investInfo?userAddr=${userAccount}`)
+
+  assetList.data.klayProtocolCategory.sort(function(a,b){
+    if(a.investedKLAY < b.investedKLAY) return 1;
+    if(a.investedKLAY === b.investedKLAY) return 0;
+    if(a.investedKLAY > b.investedKLAY) return -1;
+  })
+
+  assetList.data.oUsdtProtocolCategory.sort(function(a,b){
+    if(a.investedoUSDT < b.investedoUSDT) return 1;
+    if(a.investedoUSDT === b.investedoUSDT) return 0;
+    if(a.investedoUSDT > b.investedoUSDT) return -1;
+  })    
+
   setInvestedAsset(assetList.data)
   localStorage.setItem("lastAddress", userAccount)
   localStorage.setItem("assetList", JSON.stringify(assetList.data))
