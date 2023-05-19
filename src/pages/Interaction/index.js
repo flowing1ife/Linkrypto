@@ -10,6 +10,7 @@ import icons from "assets/tokenIcons"
 import { useParams } from "react-router-dom";
 import { BsBoxArrowLeft } from "react-icons/bs";
 import axios from 'axios';
+import poolInfos from "./poolInfos.json"
 
 
 function Interaction() {
@@ -165,6 +166,7 @@ const loadAsset = async () => {
 
 const requestDeposit = async () => {
 
+  if(id==="0xe33337cb6fbb68954fe1c3fde2b21f56586632cd"){
   const data = window.caver.klay.abi.encodeFunctionCall(
       {
         name: 'stakeKlay',
@@ -199,6 +201,113 @@ const requestDeposit = async () => {
       console.log('error', error);
       alert("지불에 실패하셨습니다.");
    })
+  } else if(id==="0xf80f2b22932fcec6189b9153aa18662b15cc9c00"){
+    const data = window.caver.klay.abi.encodeFunctionCall(
+        {
+          name: 'stake',
+          type: 'function',
+          inputs: []
+        },
+        []
+      )
+      window.caver.klay
+      .sendTransaction({
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: "0xc847D70D3Ceb7E543e7ede2aD0AC596E2fFbcEC8",
+        to: "0xf80f2b22932fcec6189b9153aa18662b15cc9c00",
+        data,
+        value: window.caver.utils.toPeb('1', 'KLAY'),
+        gas: 800000
+      })
+      .once('transactionHash', (transactionHash) => {
+        console.log('txHash', transactionHash);
+     })
+     .once('receipt', (receipt) => {
+        console.log('receipt', receipt);
+     })
+     .once('error', (error) => {
+        console.log('error', error);
+        alert("지불에 실패하셨습니다.");
+     })
+    } else if(id==="0xf50782a24afcb26acb85d086cf892bfffb5731b5"){
+    const data = window.caver.klay.abi.encodeFunctionCall(
+        {
+          name: 'AaANwg8',
+          type: 'function',
+          inputs: [
+            {
+              "name": "address",
+              "type": "address"
+            },
+            {
+              "name": "address",
+              "type": "address"
+            },
+            {
+              "name": "address",
+              "type": "address"
+            },
+            {
+              "name": "uint136",
+              "type": "uint136"
+            },
+            {
+              "name": "uint40",
+              "type": "uint40"
+            },
+            {
+              "name": "uint40",
+              "type": "uint40"
+            },
+            {
+              "name": "uint24",
+              "type": "uint24"
+            },
+            {
+              "name": "uint8",
+              "type": "uint8"
+            },
+            {
+              "name": "uint256",
+              "type": "uint256"
+            },
+            {
+              "name": "bytes32",
+              "type": "bytes32"
+            },
+            {
+              "name": "bytes32",
+              "type": "bytes32"
+            },
+            {
+              "name": "uint256",
+              "type": "uint256"
+            }
+          ]
+        },
+        [0x0000000000000000000000000000000000000040, 0x00000000000000000000000000000000000003e0, 0x0000000000000000000000000000000000000380, 32, 6, 416, 11305193, 255, 50000000000000000000, 0x0000000000000000000000000000000000000000000000000000000000000300, 0x000000000000000000000000999999999939ba65abb254339eec0b2a0dac80e9, 0]
+      )
+      window.caver.klay
+      .sendTransaction({
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: "0xc847D70D3Ceb7E543e7ede2aD0AC596E2fFbcEC8",
+        to: "0xf50782a24afcb26acb85d086cf892bfffb5731b5",
+        data,
+        value: window.caver.utils.toPeb('50', 'KLAY'),
+        gas: 800000
+      })
+      .once('transactionHash', (transactionHash) => {
+        console.log('txHash', transactionHash);
+     })
+     .once('receipt', (receipt) => {
+        console.log('receipt', receipt);
+     })
+     .once('error', (error) => {
+        console.log('error', error);
+        alert("지불에 실패하셨습니다.");
+     })
+    }
+
 }
 
 
@@ -275,28 +384,19 @@ const requestDeposit = async () => {
           <div style={{marginTop:"20px"}}></div>
                   <div className="border border-gray-200 rounded-lg p-6">
                   <h1 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white"> 풀 이름  </h1>
-                  <h1 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white"> Hashed-Ozys 노드 스테이킹  </h1>
+                  <h1 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white"> {poolInfos[id].poolName}  </h1>
                   <div style={{marginTop:"30px"}}></div>
                   <h5 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white">예치하려는 수량</h5>
                   <div style={{marginTop:"10px"}}></div>
-
-
-          <form class="flex items-center">   
+          <div class="flex items-center">   
               <label for="voice-search" class="sr-only">Search</label>
               <div class="relative w-full">
-                  {/* <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
-                  </div> */}
                   <input type="text" id="voice-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="예치가능 : 20.00 KLAY" required />
-                  {/* <button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <svg aria-hidden="true" class="w-4 h-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path></svg>
-                  </button> */}
               </div>
               <button onClick={requestDeposit} type="submit" class="inline-flex items-center py-2.5 px-3 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                  {/* <svg aria-hidden="true" class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg> */}
                   <span style={{width:"30px"}}>예치</span>
               </button>
-          </form>
+          </div>
           </div>
 
 

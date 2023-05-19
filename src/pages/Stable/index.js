@@ -42,7 +42,13 @@ function StableManage() {
       { "Kokoa Finance": 0 },
       { "Klayswap": 9 }
     ],
-    "oUsdtProtocolCategorySummary": [],
+    "oUsdtProtocolCategorySummary": [
+      { "Swapscanner": 0 },
+      { "hashed-Ozys (Klaystation)": 0 },
+      { "Stake.ly": 0 },
+      { "Kokoa Finance": 0 },
+      { "Klayswap": 9 }
+    ],
     "totalInvestCategory": { "klayStaking": 0, "ousdtStaking": 0 },
     "klayStaking": { "Min": 0, "Max": 0, "balance": 0 },
     "oUsdtStaking": {
@@ -113,7 +119,13 @@ function StableManage() {
           { "Kokoa Finance": 0 },
           { "Klayswap": 9 }
         ],
-        "oUsdtProtocolCategorySummary": [],
+        "oUsdtProtocolCategorySummary": [
+          { "Swapscanner": 0 },
+          { "hashed-Ozys (Klaystation)": 0 },
+          { "Stake.ly": 0 },
+          { "Kokoa Finance": 0 },
+          { "Klayswap": 9 }
+        ],
         "totalInvestCategory": { "klayStaking": 0, "ousdtStaking": 0 },
         "klayStaking": { "Min": 0, "Max": 0, "balance": 0 },
         "oUsdtStaking": {
@@ -216,7 +228,7 @@ const loadAsset = async () => {
 
         <div class="p-4 mt-10">
           <OverBox>
-          <div style={{paddingTop:"50px"}}/>
+          <div style={{paddingTop:"30px"}}/>
 
               {/* <div style={{paddingTop:"20px"}}/> */}
 
@@ -275,9 +287,6 @@ const loadAsset = async () => {
                             :  
                             ""
                         }
-                      
-
-
                     </h5>
                   </div>
                   <div style={{marginTop:"20px"}}></div>
@@ -286,20 +295,41 @@ const loadAsset = async () => {
                   <div style={{marginTop:"10px"}}></div>
                   <div class="mb-1 p-0 text-base font-medium dark:text-blue-500" style={{fontSize:"14px"}}>프로토콜 별</div>
                   <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-                  {investedAsset.oUsdtProtocolCategorySummary.length > 0 ?
-                      <div class="bg-blue-600 h-2.5 rounded-full" style={{width:`${Object.values(investedAsset.oUsdtProtocolCategorySummary[0])[0]}%`}}></div>
-                    :
-                    <></>
-                  }
+                  {isloading ? 
+                      <></>   // 로딩 중이고, 자산이 로딩 안된 상황
+                      :
+                        investedAsset.klayProtocolCategorySummary.length > 0 ? // 100 * 76/100 = 76, 100 * 76/100 * 51.6/100 = 
+                          <>
+                          <div class="bg-blue-200 h-2.5 rounded-full" style={{width:"100%"}}>                              
+                              <div class="bg-blue-400 h-2.5 rounded-full" 
+                                    style={{width:`${Object.values(investedAsset.klayProtocolCategorySummary[0])[0] + Object.values(investedAsset.klayProtocolCategorySummary[1])[0]}%`}}>    
+                                    <div class="bg-blue-600 h-2.5 rounded-full" 
+                                      style={{width:`${Object.values(investedAsset.klayProtocolCategorySummary[0])[0] * 100 / (Object.values(investedAsset.klayProtocolCategorySummary[0])[0] + Object.values(investedAsset.klayProtocolCategorySummary[1])[0])}%`}}>    
+                                    </div>
+                              </div>
+                          </div>
+                        </>
+                      :
+                          <></>
+                    }
 
                   <span style={{fontSize:"12px", marginTop:"20px"}}>
                       {/* Hashed-Ozys (Klaystation) - 75% */}
-                        <span class="flex flex-wrap items-center text-sm font-medium text-gray-900 dark:text-white pt-2 gap-1">
-                        {investedAsset.oUsdtProtocolCategorySummary.map((res,index)=>(
-                          true ?
-                          <><span class="pt-1 w-2.5 h-2.5 bg-blue-600 rounded-full mr-1.5"></span><span>{Object.keys(res)[0]}</span></>
+                        <span class="flex flex-wrap items-center text-xs font-medium text-gray-900 dark:text-white pt-2 gap-1">
+                        {isloading ? 
+                          <></>   // 로딩 중이고, 자산이 로딩 안된 상황
                           :
-                          <></>
+                          investedAsset.klayProtocolCategorySummary.map((res,index, array)=>(
+                            array.length !== 0 ?
+                              index < 2 ?
+                                <>
+                                <span class={`pt-1 w-2.5 h-2.5 bg-blue-${600 - 200*index} rounded-full mr-0.5`}></span>
+                                <span>{Object.keys(res)[0]} - {Object.values(res)[0].toFixed(1)}%</span>                            
+                                </>
+                                :
+                                <></>
+                            :
+                            <></>
                         ))}
                         </span>
                     </span>
@@ -308,7 +338,9 @@ const loadAsset = async () => {
                   <div style={{marginTop:"30px"}}></div>
                   <div class="mb-1 p-0 text-base font-medium dark:text-blue-500" style={{fontSize:"14px"}}>수익율 현황</div>
                   <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-                    {investedAsset.oUsdtAprStatus.myStatus !== 0 ? 
+                    {isloading ? 
+                          <></>   // 로딩 중이고, 자산이 로딩 안된 상황
+                          :investedAsset.oUsdtAprStatus.myStatus !== 0 ? 
                     <>
                     <div class="bg-blue-600 h-2.5 rounded-full" style={{width:`${100 * investedAsset.oUsdtAprStatus.myStatus / investedAsset.oUsdtAprStatus.maxApr}%`}}></div>
                     <span style={{fontSize:"12px", marginTop:"20px"}}> 
@@ -331,7 +363,7 @@ const loadAsset = async () => {
         <div class="flow-root">
           {isloading ? 
               <>
-                <ProductSkeleton width="100%" height="150px" style={{marginLeft:"0px"}}/>
+                <ProductSkeleton width="90%" height="50px" style={{marginLeft:"20px"}}/>
               </> : 
               userAccount !== "" ?
               <>
@@ -341,13 +373,13 @@ const loadAsset = async () => {
                 <li class="py-3 sm:py-4">
                 <div class="flex items-center space-x-4">
                     <div class="flex-shrink-0">
-                        <img class="w-8 h-8 rounded-full" src={icons["KLAY"]} alt=""/>
+                        <img class="w-8 h-8 rounded-full" src={icons["oUSDT"]} alt=""/>
                     </div>
                       
                     <div class="flex-1 min-w-0">
                     <div>
                         <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                        노드 스테이킹
+                        {res.category}
                         </span>
                       </div>
                       <span class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
@@ -358,13 +390,14 @@ const loadAsset = async () => {
                         </p>
                         <p class="text-sm text-gray-500 truncate dark:text-gray-400">
                             {/* 풀 KLAY : {Number(res.tvlKLAY.toFixed(0)).toLocaleString()} KLAY <br/> */}
-                            풀 TVL :  {Number(res.tvlKRW.toFixed(0)).toLocaleString()} 원
+                            {/* 풀 TVL :  {Number(res.tvlKRW.toFixed(0)).toLocaleString()} 원 */}
+                            <TransScale data={Number(res.tvlKRW.toFixed(0))}/>
                         </p>
                         <p class="text-sm text-gray-500 truncate dark:text-gray-400">
                             연 수익율 : 현재 {res.apr.toFixed(2)} %
                         </p>
                     </div>
-                    <Link to="/detail/0xe33337cb6fbb68954fe1c3fde2b21f56586632cd">
+                    <Link to={`/detail/${res.contractAddress}`}>
                       <a href="#" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         예치하기
                       </a>
@@ -406,13 +439,29 @@ const loadAsset = async () => {
             </div>
             <div class="p-6">
                 <p class="text-sm font-normal text-gray-500 dark:text-gray-400">Connect with one of our available wallet providers or create a new one.</p>
-
             </div>
       </div>
     </div>
   </div>
     </>
   );
+}
+
+function TransScale(props) {
+
+  return (
+    <>
+      풀 규모 :   
+      {props.data > 100000000 ?
+        " " + (props.data / 100000000).toFixed(2) + " 억원"
+        : props.data >  10000 ?
+        " " + (props.data / 10000).toFixed(2) + " 만원"
+        :
+        " " + props.data
+      }
+    </>
+  )
+
 }
 
 const ManageTitle = styled.div`

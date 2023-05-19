@@ -7,15 +7,20 @@ import {
     walletConnectModalClose,
     walletManageModalOpen,
     walletManageModalClose,
+    chainManageModalOpen,
+    chainManageModalClose,
     connectMetamask, 
     connectKaikas, 
     connectAddress,
     disconnect} from 'redux/reducers/WalletActions'
 import {Link} from "react-router-dom"
+import ethereum from '../../assets/ci/ethereum.png';
+import { useParams } from "react-router-dom";
 
 function Topnav () {
 
     // dispatch (Reducer 에게 엑션을 발생시키는 녀석)
+    const { chain } = useParams();  
     const dispatch = useDispatch();
 
     // redux store 상태 불러오기
@@ -23,11 +28,18 @@ function Topnav () {
     const walletProvider = useSelector(state => state.walletProvider) // 프로바이더
     const walletConnectModal = useSelector(state => state.walletConnect) // 지갑 연결 모달 상태
     const walletManageModal = useSelector(state => state.walletManage) // 지갑 관리 모달 상태
+    const chainManageModal = useSelector(state => state.chainManage) // 체인 연결 모달 상태
 
     // 월렛연결 모달 열기
     const openModal = () => {
         dispatch(walletConnectModalOpen())
     }
+
+    const openChainModal = () => {
+        console.log("chainManageModal",chainManageModal)
+        dispatch(chainManageModalOpen())
+    }
+
   
     // 메타마스크 연결하기
     const conMetamask = () => {
@@ -97,9 +109,16 @@ function Topnav () {
                     <div>
                     {/* <span style={{marginRight:"20px", fontSize:"15px", fontWeight:"500"}}> 투자하기 </span>
                     <span style={{marginRight:"20px", fontSize:"15px", fontWeight:"500"}}> 관리하기 </span> */}
-                    <button onClick={klayButton} type="button" data-modal-target="crypto-modal" data-modal-toggle="crypto-modal" class="text-gray-900 ml-1 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700">
-                        <img class="w-4 h-4 rounded-full" src={icons["KLAY"]} alt=""/>
+                    <button onClick={openChainModal} type="button" data-modal-target="crypto-modal" data-modal-toggle="crypto-modal" class="text-gray-900 ml-1 bg-white hover:bg-gray-100 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700">
+                        {/* <img class="w-4 h-4 rounded-full" src={icons["KLAY"]} alt=""/> */}
+                        {/* <img class="w-4 h-4 rounded-full" src={ethereum} alt=""/> */}
+                        {chain === "ethereum" ? 
+                            <img class="w-4 h-4 rounded-full" src={ethereum} alt=""/>
+                            :
+                            <img class="w-4 h-4 rounded-full" src={icons["KLAY"]} alt=""/>
+                        }
                     </button>
+                    
                         
                     {userAccount === "" ?
                     <button onClick={openModal} type="button" data-modal-target="crypto-modal" data-modal-toggle="crypto-modal" class="text-white ml-1 bg-primary-700 hover:bg-gray-100 border border-gray-200 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
@@ -144,6 +163,62 @@ function Topnav () {
             </div>
             </div>
         </nav>
+
+        {chainManageModal ? (
+            <>
+            <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+                <div className="relative w-full max-w-md max-h-full">
+                <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+                    
+                    <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
+                    <h3 className="text-2xl font-semibold">
+                        체인변경
+                    </h3>
+                    <button onClick={() => dispatch(chainManageModalClose())}>
+                        <span className="bg-transparent text-black opacity-1 h-6 w-6 text-2xl block outline-none focus:outline-none">
+                        ×
+                        </span>
+                    </button>
+                    </div>
+                    
+                    <div class="p-6">
+                    
+                    <p class="text-sm font-normal text-gray-500 dark:text-gray-400">자산연동을 원하는 체인을 선택하세요. </p>
+                        <ul class="my-4 space-y-3">
+                            <li>
+                            <Link to="/invest" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white">
+                                    <img class="w-6 h-6 rounded-full" src={icons["KLAY"]} alt=""/>
+                                    <span class="flex-1 ml-3 whitespace-nowrap">Klaytn</span>
+                                    {chain !== "ethereum" ?
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 ml-3 text-xs font-medium text-gray-500 bg-green-100 rounded dark:bg-gray-700 dark:text-gray-400">
+                                            연결됨
+                                        </span>
+                                        :
+                                        <></>
+                                        }
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/invest/ethereum" class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white">
+                                    <img class="w-6 h-6 rounded-full" src={ethereum} alt=""/>
+                                        <span class="flex-1 ml-3 whitespace-nowrap">Ethereum</span>
+                                        {chain === "ethereum" ?
+                                        <span class="inline-flex items-center justify-center px-2 py-0.5 ml-3 text-xs font-medium text-gray-500 bg-green-100 rounded dark:bg-gray-700 dark:text-gray-400">
+                                            연결됨
+                                        </span>
+                                        :
+                                        <></>
+                                        }
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+            {/* <div className="opacity-25 fixed inset-0 z-40 bg-black"></div> */}
+            </>
+        ) : null}
 
       
       {walletConnectModal ? (

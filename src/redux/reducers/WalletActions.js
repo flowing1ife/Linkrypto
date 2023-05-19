@@ -3,14 +3,14 @@ export const WALLET_CONNECT_MODAL_OPEN = "WALLET_CONNECT_MODAL_OPEN";
 export const WALLET_CONNECT_MODAL_CLOSE = "WALLET_CONNECT_MODAL_CLOSE";
 export const WALLET_MANAGE_MODAL_OPEN = "WALLET_MANAGE_MODAL_OPEN";
 export const WALLET_MANAGE_MODAL_CLOSE = "WALLET_MANAGE_MODAL_CLOSE";
+export const CHAIN_MANAGE_MODAL_OPEN = "CHAIN_MANAGE_MODAL_OPEN";
+export const CHAIN_MANAGE_MODAL_CLOSE = "CHAIN_MANAGE_MODAL_CLOSE";
 
 // modals : connec
 export const ADDRESS_CONNECT = "ADDRESS_CONNECT"
 export const METAMASK_CONNECT = "METAMASK_CONNECT";
 export const WALLET_KAIKAS_CONNECT = "WALLET_KAIKAS_CONNECT";
-
 export const WALLET_DISCONNECT = "WALLET_DISCONNECT";
-
 export const CONNECT_REFRESH = "CONNECT_REFRESH";
 export const WALLET_MODAL = "WALLET_MODAL";
 
@@ -45,6 +45,22 @@ const manageWalletModalClose = payload => {
         type: WALLET_MANAGE_MODAL_CLOSE,
         payload
     };
+};
+
+// wallet manage modal open
+const manageChainModalOpen = payload => {
+  return {
+      type: CHAIN_MANAGE_MODAL_OPEN,
+      payload
+  };
+};
+
+// wallet manage modal close
+const manageChainModalClose = payload => {
+  return {
+      type: CHAIN_MANAGE_MODAL_CLOSE,
+      payload
+  };
 };
 
 // matamask connect
@@ -99,6 +115,16 @@ export const walletManageModalOpen = () => async dispatch => {
 // wallet manage modal open
 export const walletManageModalClose = () => async dispatch => {
     dispatch(manageWalletModalClose({ walletManageModal: false }));
+}
+
+// chain manage modal open
+export const chainManageModalOpen = () => async dispatch => {
+  dispatch(manageChainModalOpen({ chainManageModal: true }));
+}
+
+// chain manage modal open
+export const chainManageModalClose = () => async dispatch => {
+  dispatch(manageChainModalClose({ chainManageModal: false }));
 }
 
 // metamask connect

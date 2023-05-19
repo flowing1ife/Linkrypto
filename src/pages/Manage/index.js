@@ -11,6 +11,9 @@ import { useParams } from "react-router-dom";
 import { BsBoxArrowLeft } from "react-icons/bs";
 import axios from 'axios';
 
+import { WsV2 } from "chainrunner-sdk";
+import BigNumber from "bignumber.js";
+
 
 function Manage() {
 
@@ -63,7 +66,7 @@ function Manage() {
       "maxApr": 0
     },
     "klayProtocolCategorySummary":[
-      {"":0}
+      {"":0},{"":0}
     ],
     "klayProtocolCategory": [
       {
@@ -83,6 +86,8 @@ function Manage() {
 })
 
 useEffect(() => {
+
+
 
   console.log("userAccount",userAccount)
   console.log("localStorage.getItem.address", localStorage.getItem("address") === "")
@@ -123,7 +128,7 @@ useEffect(() => {
         "myStatus": 0,
         "maxApr": 0
       },
-      "klayProtocolCategorySummary":[{"":0}],
+      "klayProtocolCategorySummary":[{"":0},{"":0}],
       "klayProtocolCategory": [
         {
           "poolName": "hashed-Ozys (Klaystation)",
@@ -190,14 +195,43 @@ const loadAsset = async () => {
   localStorage.setItem("assetList", JSON.stringify(assetList.data))
   localStorage.setItem("assetTimestamp", time)
 
-
-
   // console.log("storage assetList", localStorage.getItem("assetList"))
   // console.log("storage assetList", time - localStorage.getItem("assetTimestamp")) // 1000
 
   console.log("assetList",assetList)
   console.log("loading 종료")
-  setIsloading(false)    
+  setIsloading(false)
+
+}
+
+async function testBifi () {
+  const client = new WsV2("wss://api.glitch.chainrunner.io", window.ethereum, "GLITCH/KOREA");
+  const response = await client.call(
+    "Glitch.view.info.bridges",
+    undefined,
+    BigNumber(1),
+  );
+  
+  console.log(response.result);  // const response = await client.call(
+  //   "Glitch.view.info.lendings",
+  //   undefined,
+  //   new BigNumber(1),
+  // );
+  
+  //   "Glitch.view.account.balance",
+  //   undefined,
+  //   "0x0000000000000000000000000000000000000000",
+  //   BigNumber(0xbfc0),
+  // );
+  
+  // const response = await client.call(
+  //   "Glitch.view.info.assets",
+  //   undefined,
+  //   new BigNumber(0xbfc)
+  // );
+
+  console.log(response.result);
+
 }
 
   return (
@@ -207,7 +241,7 @@ const loadAsset = async () => {
 
         <div class="p-4 mt-10">
           <OverBox>
-          <div style={{paddingTop:"50px"}}/>
+          <div style={{paddingTop:"30px"}}/>
 
               {/* <div style={{paddingTop:"20px"}}/> */}
               <SubTemplateBlockVertical>
@@ -277,19 +311,40 @@ const loadAsset = async () => {
                   <div style={{marginTop:"10px"}}></div>
                   <div class="mb-1 p-0 text-base font-medium dark:text-blue-500" style={{fontSize:"14px"}}>프로토콜 별</div>
                   <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-                    {investedAsset.klayProtocolCategorySummary.length > 0 ?
-                      <div class="bg-blue-600 h-2.5 rounded-full" style={{width:`${Object.values(investedAsset.klayProtocolCategorySummary[0])[0]}%`}}></div>
-                    :
-                    <></>
+                    {isloading ? 
+                      <></>   // 로딩 중이고, 자산이 로딩 안된 상황
+                      :
+                        investedAsset.klayProtocolCategorySummary.length > 0 ? // 100 * 76/100 = 76, 100 * 76/100 * 51.6/100 = 
+                          <>
+                          <div class="bg-blue-200 h-2.5 rounded-full" style={{width:"100%"}}>                              
+                              <div class="bg-blue-400 h-2.5 rounded-full" 
+                                    style={{width:`${Object.values(investedAsset.klayProtocolCategorySummary[0])[0] + Object.values(investedAsset.klayProtocolCategorySummary[1])[0]}%`}}>    
+                                    <div class="bg-blue-600 h-2.5 rounded-full" 
+                                      style={{width:`${Object.values(investedAsset.klayProtocolCategorySummary[0])[0] * 100 / (Object.values(investedAsset.klayProtocolCategorySummary[0])[0] + Object.values(investedAsset.klayProtocolCategorySummary[1])[0])}%`}}>    
+                                    </div>
+                              </div>
+                          </div>
+                        </>
+                      :
+                          <></>
                     }
                     <span style={{fontSize:"12px", marginTop:"20px"}}>
                       {/* Hashed-Ozys (Klaystation) - 75% */}
-                        <span class="flex flex-wrap items-center text-sm font-medium text-gray-900 dark:text-white pt-2 gap-1">
-                        {investedAsset.klayProtocolCategorySummary.map((res,index)=>(
-                          index > 1 ?
-                          <><span class="pt-1 w-2.5 h-2.5 bg-blue-600 rounded-full mr-1.5"></span><span>{Object.keys(res)[0]}</span></>
+                        <span class="flex flex-wrap items-center text-xs font-medium text-gray-900 dark:text-white pt-2 gap-1">
+                        {isloading ? 
+                          <></>   // 로딩 중이고, 자산이 로딩 안된 상황
                           :
-                          <></>
+                          investedAsset.klayProtocolCategorySummary.map((res,index, array)=>(
+                            array.length !== 0 ?
+                              index < 2 ?
+                                <>
+                                <span class={`pt-1 w-2.5 h-2.5 bg-blue-${600 - 200*index} rounded-full mr-0.5`}></span>
+                                <span>{Object.keys(res)[0]} - {Object.values(res)[0].toFixed(1)}%</span>                            
+                                </>
+                                :
+                                <></>
+                            :
+                            <></>
                         ))}
                         </span>
                     </span>
@@ -298,16 +353,19 @@ const loadAsset = async () => {
                   <div style={{marginTop:"40px"}}></div>
                   <div class="mb-1 p-0 text-base font-medium dark:text-blue-500" style={{fontSize:"14px"}}>수익율 현황</div>
                   <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-                    {investedAsset.klayAprStatus.myStatus !== 0 ? 
-                    <>
-                    <div class="bg-blue-600 h-2.5 rounded-full" style={{width:`${100 * investedAsset.klayAprStatus.myStatus / investedAsset.klayAprStatus.maxApr}%`}}></div>
-                    <span style={{fontSize:"12px", marginTop:"20px"}}> 
-                      My status - {investedAsset.klayAprStatus.myStatus.toFixed(2)} % 
-                      (Max {investedAsset.klayAprStatus.maxApr.toFixed(2)}%)
-                    </span>
-                    </>
-                    :
-                    <></>
+                    {isloading ? 
+                          <></>   // 로딩 중이고, 자산이 로딩 안된 상황
+                          :
+                          investedAsset.klayAprStatus.myStatus !== 0 ? 
+                          <>
+                          <div class="bg-blue-600 h-2.5 rounded-full" style={{width:`${100 * investedAsset.klayAprStatus.myStatus / investedAsset.klayAprStatus.maxApr}%`}}></div>
+                          <span style={{fontSize:"12px", marginTop:"20px"}}> 
+                            My status - {investedAsset.klayAprStatus.myStatus.toFixed(2)} % 
+                            (Max {investedAsset.klayAprStatus.maxApr.toFixed(2)}%)
+                          </span>
+                          </>
+                          :
+                          <></>
                     }
                   </div>
                   
@@ -322,7 +380,7 @@ const loadAsset = async () => {
         <div class="flow-root">
           {isloading ? 
               <>
-                <ProductSkeleton width="100%" height="150px" style={{marginLeft:"0px"}}/>
+                <ProductSkeleton width="90%" height="50px" style={{marginLeft:"20px"}}/>
               </> : 
               userAccount !== "" ?
               <>
@@ -330,75 +388,86 @@ const loadAsset = async () => {
               
               <h5 class="mb-2 text-1xl font-bold tracking-tight text-black dark:text-white">투자상품</h5>
                 <div style={{position:"relative"}} >
-                <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="text-blue-700 border border-blue-200 bg-white hover:bg-blue-100 focus:ring-1 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1.5 text-center inline-flex items-center" type="button">
-                  보유량순
+                <button onClick={testBifi} id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="text-blue-700 border border-blue-200 bg-white hover:bg-blue-100 focus:ring-1 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1.5 text-center inline-flex items-center" type="button">
+                  내 보유량순
                   {/* <svg class="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                   </svg> */}
-                </button>
+                </button>  
                 </div>
               </div>
               <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700" style={{marginLeft:"15px"}}>
+
               {investedAsset.klayProtocolCategory.map((res)=>(
                 <li class="py-3 sm:py-4">
-                <div class="flex items-center space-x-4">
-                    <div class="flex-shrink-0">
-                        <img class="w-8 h-8 rounded-full" src={icons["KLAY"]} alt=""/>
-                    </div>
-                      
-                    <div class="flex-1 min-w-0">
-                    <div>
-                        <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                        노드 스테이킹
-                        </span>
+                  <div class="flex items-center space-x-4">
+                      <div class="flex-shrink-0">
+                          <img class="w-8 h-8 rounded-full" src={icons["KLAY"]} alt=""/>
                       </div>
-                      {res.investedKLAY > 0 ?
-                      <span class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
-                        {res.investedKLAY} KLAY 예치중
-                      </span> :
-                      <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-gray-300">
-                        예치 없음
-                      </span>
-                      }
-                        <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
-                            {res.poolName}
-                        </p>
-                        <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                            {/* 풀 KLAY : {Number(res.tvlKLAY.toFixed(0)).toLocaleString()} KLAY <br/> */}
-                            풀 TVL :  {Number(res.tvlKRW.toFixed(0)).toLocaleString()} 원
-                        </p>
-                        <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                            연 수익율 : 현재 {res.apr} %
-                        </p>
-                        <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                            유동성 토큰 : {res.liqToken}
-                        </p>
-                        <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                            언스테이킹 옵션 : 
-                            {res.unStakingOption !== undefined ? 
-                              res.unStakingOption.length > 1 ?
-                                res.unStakingOption.map((res)=>(res))                                
+                        
+                      <div class="flex-1 min-w-0">
+                      <div>
+                          <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                          {res.category}
+                          </span>
+                        </div>
+                        {res.investedKLAY * 1000 > 1 ?
+                          <span class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                            {res.investedKLAY.toFixed(2)} KLAY 예치중
+                          </span> :
+                          res.investedKLAY > 0 ?
+                          <span class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                            0.001 KLAY 이하 예치중
+                          </span> :
+                          <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-gray-300">
+                            예치 없음
+                          </span>
+                        }
+                          <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+                              {res.poolName}
+                          </p>
+                          <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                              {/* 풀 KLAY : {Number(res.tvlKLAY.toFixed(0)).toLocaleString()} KLAY <br/> */}
+                              {/* 풀 TVL :  {Number(res.tvlKRW.toFixed(0)).toLocaleString()} 원 */}
+                              <TransScale data={Number(res.tvlKRW.toFixed(0))}/>
+                          </p>
+                          <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                              연 수익율 : 현재 {Number(res.apr.toFixed(2)).toLocaleString()} %
+                          </p>
+                          <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                              
+                              {res.liqToken !== undefined ? 
+                                  "유동성 토큰 :" + res.liqToken
                                 :
-                                res.unStakingOption[0]
-                              :
-                              <></>
-                            }
-                        </p>
-                    </div>
-                    <Link to="/detail/0xe33337cb6fbb68954fe1c3fde2b21f56586632cd">
-                      <a href="#" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        예치하기
-                      </a>
-                    </Link>
-                </div>
-              </li>
-                    ))}
+                                <></>
+                              }
+                          </p>
+                          <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                              
+                              {res.unStakingOption !== undefined ? 
+                                res.unStakingOption.length > 1 ?
+                                  res.unStakingOption.map((res)=>(res))                                
+                                  :
+                                  "언스테이킹 옵션 :" +res.unStakingOption[0]
+                                :
+                                <></>
+                              }
+                          </p>
+                      </div>
+                      <Link to={`/detail/${res.contractAddress}`}>
+                        <a href="#" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                          예치하기
+                        </a>
+                      </Link>
+                  </div>
+                </li>
+                ))}
 
-                    </ul>
-                    </>
-                    :
-                    <></>
-                }
+                </ul>
+                </>
+                :
+                <></>
+              }
               </div>
             </div>
 
@@ -428,6 +497,23 @@ const loadAsset = async () => {
   </div>
     </>
   );
+}
+
+function TransScale(props) {
+
+  return (
+    <>
+      풀 규모 :   
+      {props.data > 100000000 ?
+        " " + (props.data / 100000000).toFixed(2) + " 억원"
+        : props.data >  10000 ?
+        " " + (props.data / 10000).toFixed(2) + " 만원"
+        :
+        " " + props.data
+      }
+    </>
+  )
+
 }
 
 const ManageTitle = styled.div`

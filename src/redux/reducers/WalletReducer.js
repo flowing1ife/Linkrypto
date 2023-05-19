@@ -3,6 +3,8 @@ import {
     WALLET_CONNECT_MODAL_CLOSE, 
     WALLET_MANAGE_MODAL_OPEN,
     WALLET_MANAGE_MODAL_CLOSE,
+    CHAIN_MANAGE_MODAL_OPEN,
+    CHAIN_MANAGE_MODAL_CLOSE,
     METAMASK_CONNECT,
     WALLET_KAIKAS_CONNECT,
     ADDRESS_CONNECT,
@@ -11,8 +13,10 @@ import {
 const initialState = {
   account: "",
   walletProvider: "",
+  chainProvier: "klaytn",
   walletConnectModal: false,
-  walletManageModal: false
+  walletManageModal: false,
+  chainManageModal: false,
 };
 
 const WalletReducer = (state = initialState, action) => {
@@ -42,7 +46,19 @@ const WalletReducer = (state = initialState, action) => {
         walletManage: action.payload.walletManageModal
         };
         
-    case METAMASK_CONNECT:
+    case CHAIN_MANAGE_MODAL_OPEN:
+      return {
+          ...state,
+          chainManage: action.payload.chainManageModal
+          };
+  
+    case CHAIN_MANAGE_MODAL_CLOSE:
+    return {
+        ...state,
+        chainManage: action.payload.chainManageModal
+        };
+            
+      case METAMASK_CONNECT:
       return {
         ...state,
         walletProvider: "metamask",

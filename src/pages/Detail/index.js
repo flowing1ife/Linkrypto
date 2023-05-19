@@ -1,256 +1,411 @@
-import hashed from 'assets/ci/hashed.png'
 import 'App.css'; 
-import {Link} from "react-router-dom"
-import styled from "styled-components";
-import WalletTokenDetailTable from "pages/Portfolio/WalletTokenDetailTable.js"
+import axios from 'axios';
+import styled, { keyframes } from 'styled-components';
 import react, {useState, useEffect} from "react";
 import { useDispatch , useSelector } from 'react-redux';
-
+import { useParams, useNavigate } from "react-router-dom";
+import {metamaskDepositExecutor, metamaskWithdrawalExecutor, metamaskSwapExecutor, metamaskOusdtDepositExecutor} from './metamaskExecutor.js';
 import icons from "assets/tokenIcons"
-import { useParams } from "react-router-dom";
-import { BsBoxArrowLeft } from "react-icons/bs";
-import axios from 'axios';
+import Swal from 'sweetalert2'
+
+import poolInfos from "./poolInfos.json"
 
 
 function Detail() {
 
   const { id } = useParams();  
   const [showModal, setShowModal] = useState(false);
-  const [isloading, setIsloading] = useState(false)
+  const [isloading, setIsloading] = useState(false);
+  const [selection, setSelection] = useState("예치");
+  const [depositAmount, setDepositAmount] = useState()
+  const [withdrawalAmount, setWithdrawalAmount] = useState()
+
+  
 
   const userAccount = useSelector(state => state.account) // 지갑주소
   const walletProvider = useSelector(state => state.walletProvider) // 프로바이더
 
-  // nodeklay => "클레이 노드 스테이킹"
-  const [investedAsset, setInvestedAsset] = useState({
-    "isInvested": false,
-    "totalInvested": 0,
-    "totalDailyIncome": 0,
-    "totalApr": 0,
-    "klayInvestedinKlay": 0,
-    "klayInvestedinKRW": 0,
-    "klayDailyIncomeKlay": 0,
-    "klayDailyIncomeKRW": 0,
-    "KlayTotalApr": 0,
-    "investCategory": {
-        "klayStaking": 0,
-        "ousdtStaking": 0
-    },
-    "klayStaking": {
-        "Min": 0,
-        "Max": 0,
-        "balance": 0
-    },
-    "ousdtStaking": {
-        "Min": 0,
-        "Max": 0,
-        "balance": 0
-    },
-    "klayAprStatus": {
-      "myStatus": 0,
-      "maxApr": 0
-    },
-    "protocolCategorySummary":[{"Swapscanner":0}],
-    "klayProtocolCategory": [
-      {
-        "poolName": "hashed-Ozys (Klaystation)",
-        "category": "노드 스테이킹",
-        "investedKLAY": 0,
-        "tvlKLAY": 0,
-        "tvlKRW": 0,
-        "apr":0,
-        "liqToken": "sKLAY",
-        "unStakingOption": [
-            "스왑",
-            "7일대기"
-        ]
-      }
-  ]
-})
-
-useEffect(() => {
-
-  if(userAccount === ""){ // 아무것도 아닌 거라면,
-    // target 주소가 아무 것도 아닌 것이라면 아무 것도 안한다.
-    setInvestedAsset({
-      "isInvested": false,
-      "totalInvested": 0,
-      "totalDailyIncome": 0,
-      "totalApr": 0,
-      "klayInvestedinKlay": 0,
-      "klayInvestedinKRW": 0,
-      "klayDailyIncomeKlay": 0,
-      "klayDailyIncomeKRW": 0,
-      "KlayTotalApr": 0,
-      "investCategory": {
-          "klayStaking": 0,
-          "ousdtStaking": 0
-      },
-      "klayStaking": {
-          "Min": 0,
-          "Max": 0,
-          "balance": 0
-      },
-      "ousdtStaking": {
-          "Min": 0,
-          "Max": 0,
-          "balance": 0
-      },
-      "klayAprStatus": {
-        "myStatus": 0,
-        "maxApr": 0
-      },
-      "protocolCategorySummary":[{"Swapscanner":0}],
-      "klayProtocolCategory": [
-        {
-          "poolName": "hashed-Ozys (Klaystation)",
-          "category": "노드 스테이킹",
-          "investedKLAY": 0,
-          "tvlKLAY": 0,
-          "tvlKRW": 0,
-          "apr":0,
-          "liqToken": "sKLAY",
-          "unStakingOption": [
-              "스왑",
-              "7일대기"
-          ]
-        }
-    ]
+  const [detailAsset, setDetailAsset] = useState({
+    "poolName": "",
+    "category": "",
+    "contractAddress": "",
+    // "TokenName": 0,
+    "investedToken": 0,
+    "availableToken": 0,
+    "tvlToken": 0,
+    "tvlKRW": 0,
+    "apr": 0
   })
 
-  } else if (userAccount.length > 5) { // 지갑 주소가 로딩 되었는데,
 
-    console.log("지갑주소가 바뀜", userAccount)
+  useEffect(() => {
+    console.log("depositAmount",depositAmount)
+    loadAsset()
+  }, [userAccount])
 
-    if(localStorage.getItem("address") === localStorage.getItem("lastAddress")){ // 마지막에 불러온 주소랑 상태 주소가 같은가?
-      // console.log("마지막 지갑 주소랑 같음", userAccount)
 
-      const time = Date.now();
-      // console.log("현재시간", time)
-      // console.log("마지막 로드 시간", Number(localStorage.getItem("assetTimestamp")))
-      // console.log("로드한 이후 시간", time - Number(localStorage.getItem("assetTimestamp")))
+  const loadAsset = async () => {
 
-      if((time - localStorage.getItem("assetTimestamp")) > 60 * 1000){ // 불러온 이력이 있다면 불러온지 1분이 넘었는가?
-        loadAsset() // 그러면 다시 자산을 불러온다.
+    console.log("loading 시작")
+    setIsloading(true)
 
-      } else { // 불러온 이력이 없거나 1분 이내라면 기존 데이터를 불러온다.
-        setInvestedAsset(JSON.parse(localStorage.getItem("assetList"))) 
+    console.log("userAccount",userAccount)
+    if(userAccount !== ""){
+      const assetList = await axios.get(`https://wp22qg4khl.execute-api.ap-northeast-2.amazonaws.com/v1/service/managePool?userAddr=${userAccount}&contractAddress=${id}`)
+      console.log("assetList",assetList.data)
+      setDetailAsset(assetList.data)
+    } else {
+      setDetailAsset({
+        "poolName": "",
+        "category": "",
+        "contractAddress": "",
+        "investedToken": 0,
+        "availableToken": 0,
+        "tvlToken": 0,
+        "tvlKRW": 0,
+        "apr": 0
+      })
+    }
+    console.log("loading 종료")
+    setIsloading(false)    
+  }
+
+  const requestWithdrawal = async () => {
+
+    if(walletProvider === "metamask"){
+
+      const metamaskReturn = await metamaskWithdrawalExecutor(userAccount, id, withdrawalAmount, detailAsset.investedToken)
+      console.log("metamaskReturn",metamaskReturn)
+
+    } else {
+
+    }
+  
+  }
+
+  const requestSwap = async () => {
+
+    if(walletProvider === "metamask"){
+
+      
+      // metamaskWithdrawalExecutor(userAccount, id, withdrawalAmount, detailAsset.investedToken)
+
+    } else {
+
+    }
+
+  }
+
+  const requestDeposit = async () => {
+
+    if(walletProvider === "metamask"){
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      })      
+
+      setIsloading(true)
+
+      let trxReturn = {}
+
+      
+      if(poolInfos[id].poolToken === "KLAY"){
+        trxReturn = await metamaskDepositExecutor(userAccount, id, depositAmount)
+      } else {
+        trxReturn = await metamaskOusdtDepositExecutor(userAccount, id, depositAmount)
       }
 
-    } else { // 그러면 다시 자산을 불러온다.
-      loadAsset() 
+      setIsloading(false)
+
+      Toast.fire({
+        icon: 'success',
+        title: '예치가 성공적으로 실행되었습니다.',
+        html: `<a href=https://scope.klaytn.com/tx/${trxReturn.transactionHash} target="_blank">상세내역보기</a>`
+      })
+
+      await loadAsset()
+
+
+    } else if (walletProvider === "kaikas") {
+      const data = window.caver.klay.abi.encodeFunctionCall(
+        {
+          name: 'stake',
+          type: 'function',
+          inputs: []
+        },
+        []
+      )
+      await window.caver.klay
+      .sendTransaction({
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: "0xc847D70D3Ceb7E543e7ede2aD0AC596E2fFbcEC8",
+        to: "0xf80f2b22932fcec6189b9153aa18662b15cc9c00",
+        data,
+        value: window.caver.utils.toPeb('1', 'KLAY'),
+        gas: 800000
+      })
+      .once('transactionHash', (transactionHash) => {
+        console.log('txHash', transactionHash);
+        loadAsset()
+      })
+      .once('receipt', (receipt) => {
+          console.log('receipt', receipt);
+          loadAsset()
+        })
+      .once('error', (error) => {
+          console.log('error', error);
+          alert("지불에 실패하셨습니다.");
+      })
+    } else {
+      alert("지갑 연결이 필요합니다.")
     }
   }
-}, [userAccount])
 
-const loadAsset = async () => {
 
-  console.log("loading 시작")
-  setIsloading(true)
-  const time = Date.now();
+  const Backbutton = () => {
+    const navigate = useNavigate();
+    const onClickBtn = () => {
+      navigate(-1);
+    };
+    return (
+      <button onClick={onClickBtn} class="inline-flex items-center px-4 py-2 text-sm font-medium border border-blue-200 text-center text-blue-500 bg-white rounded-lg hover:bg-blue-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      돌아가기
+      </button>
+    )
+  }
 
-  const assetList = await axios.get(`https://wp22qg4khl.execute-api.ap-northeast-2.amazonaws.com/v1/service/investInfo?userAddr=${userAccount}`)
-  setInvestedAsset(assetList.data)
-  localStorage.setItem("assetTimestamp", time)
-  localStorage.setItem("lastAddress", userAccount)
-  // console.log("storage assetList", localStorage.getItem("assetList"))
-  // console.log("storage assetList", time - localStorage.getItem("assetTimestamp")) // 1000
+  const selectionDeposit = () => {
+    setSelection("예치")
+  }
 
-  // localStorage.setItem("assetList", JSON.stringify(assetList.data))
-  // localStorage.setItem("address", userAccount)
-  // console.log("assetList",assetList)
-  // console.log("loading 종료")
-  setIsloading(false)    
-}
+  const selectionWithdrawler = () => {
+    setSelection("인출")
+  }
 
+  const maxDepositHandler = () => {
+    setDepositAmount(detailAsset.availableToken)
+  }
+
+  const maxWithdrawerHandler = () => {
+    setWithdrawalAmount(detailAsset.investedToken)
+  }
+  
 
   return (
     <>
-
       <div>
-
         <div class="p-4 mt-10">
           <OverBox>
           <div style={{paddingTop:"50px"}}/>
-          
-          
-              {/* <div style={{paddingTop:"20px"}}/> */}
+          <SubTemplateBlockVertical>
+            <div>
+              <div class="px-4 sm:px-0">
+                <Wrappertitle>
+                  <ManageTitle>
+                    <Title>
+                    <h3 class="text-base font-semibold leading-7 text-gray-900">예치 하기</h3>
+                    </Title>
+                    <Backbutton class="inline-flex items-center px-4 py-2 text-sm font-medium border border-blue-200 text-center text-blue-500 bg-white rounded-lg hover:bg-blue-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"/>
+                  </ManageTitle> 
+                </Wrappertitle>
 
-              <SubTemplateBlockVertical>
-              {/* <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"> */}
+              <div style={{paddingTop:"20px"}}/>
 
-    {/* </div> */}
+                  <div class="block p-6 bg-blue-500 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                    <h5 class="mb-2 text-1xl font-bold tracking-tight text-white dark:text-white">{poolInfos[id].poolName} 투자현황</h5>
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-white dark:text-white">
+                      {isloading ? 
+                          <><ProductSkeleton width="20%" height="30px" /></> 
+                          :
+                          userAccount !== "" ?
+                            <> {detailAsset.investedToken.toFixed(2)} {poolInfos[id].poolToken}  </>
+                            :  
+                            "지갑을 연결해주세요"
+                      }
+                      
+                      <span className="text-xs text-gray mx-5">
+                      {isloading ? 
+                          <><ProductSkeleton width="5%" height="30px" /></> 
+                          :
+                          userAccount !== "" ?
+                            <> 
+                            {/* {Number(investedAsset.klayInvestedinKRW.toFixed(0)).toLocaleString()} 원   */}
+                            </>
+                            :  
+                            ""
+                      }
+                        
+                      </span>
+                    </h5>
 
-          <div>
-          <div class="px-4 sm:px-0">
-          <Wrappertitle>
-                <ManageTitle>
-                  <Title>
-                  <h3 class="text-base font-semibold leading-7 text-gray-900">상품상세</h3>
-                  {/* <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Liquidity Staking</p> */}
-                    {/* {id} 관리하기 */}
-                  </Title>
-                  <Link to="/manage/klayNode">
-                    <a href="#" class="inline-flex items-center px-4 py-2 text-sm font-medium border border-blue-200 text-center text-blue-500 bg-white rounded-lg hover:bg-blue-600 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                      돌아가기
-                    </a>
-                    {/* <BsBoxArrowLeft style={{ marginRight: "10px", verticalAlign: "bottom" }}/> */}
-                  </Link>
-                </ManageTitle> 
-              </Wrappertitle>
+                  </div>
+                  <div style={{marginTop:"20px"}}></div>
+                  <div className="border border-gray-200 rounded-lg p-5">
+                  <div style={{marginTop:"10px"}}></div>
 
-              <div class="bg-white py-6">
-                <div class="mx-auto max-w-7xl px-6 lg:px-8">
-                  <dl class="grid grid-cols-1 gap-x-8 gap-y-16 text-center lg:grid-cols">
-                    <div class="mx-auto flex max-w-xs flex-col gap-y-4">
-                    <dt class="text-base leading-7 text-gray-600"> 내 예치자산</dt>
-                      <dd class="text-3xl font-semibold tracking-tight text-gray-900 sm:text-3xl">3,200 KLAY</dd>
-                      <dt class="text-base leading-7 text-gray-600"> 231,000 원</dt>
-                    </div>
-                  </dl>
-                </div>
+              {selection === "예치" ? 
+
+              <ul class="text-sm font-medium text-center text-gray-400 divide-x divide-blue-200 border border-blue-300 rounded-lg flex dark:divide-blue-700 dark:text-blue-400">
+                  <li class="w-full">
+                      <a onClick={selectionDeposit} href="#" class="inline-block w-full p-2 text-blue-600 bg-blue-100 rounded-l-lg focus:ring-1 focus:ring-blue-300 active focus:outline-none dark:bg-blue-700 dark:text-white">
+                        예치
+                      </a>
+                  </li>
+                  <li class="w-full">
+                      <a onClick={selectionWithdrawler} href="#" class="inline-block w-full p-2 bg-white rounded-r-lg hover:text-blue-700 hover:bg-blue-50 focus:ring-1 focus:outline-none focus:ring-blue-300 dark:hover:text-white dark:bg-blue-800 dark:hover:bg-blue-700">
+                        인출
+                      </a>
+                  </li>
+              </ul>
+              :
+              <ul class="text-sm font-medium text-center text-gray-400 divide-x divide-blue-200 border border-blue-300 rounded-lg flex dark:divide-blue-700 dark:text-blue-400">
+              <li class="w-full">
+                  <a onClick={selectionDeposit} href="#" class="inline-block w-full p-2 text-gray bg-white rounded-l-lg focus:ring-1 focus:ring-blue-300 active focus:outline-none dark:bg-blue-700 dark:text-white">
+                    예치
+                  </a>
+              </li>
+              <li class="w-full">
+                  <a onClick={selectionWithdrawler} href="#" class="inline-block w-full p-2 text-blue-600 bg-blue-100 rounded-r-lg hover:text-blue-700 hover:bg-blue-50 focus:ring-1 focus:outline-none focus:ring-blue-300 dark:hover:text-white dark:bg-blue-800 dark:hover:bg-blue-700">
+                    인출
+                  </a>
+              </li>
+              </ul>
+              }
+
+
+
+          <div style={{marginTop:"20px"}}></div>
+              <div className="p-2">
+              <h5 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white">
+              {selection === "예치" ? "예치" : "인출"}</h5>
+              <div style={{marginTop:"10px"}}></div>
+              <div class="items-center">   
+              
+                  <label for="voice-search" class="sr-only">Search</label>
+                  
+                  <div class="relative w-full">
+                      {selection === "예치" ? 
+                      <>
+                        <div class="relative">
+                            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                            </div>
+                            <input type="number" value={depositAmount} onChange={e => setDepositAmount(e.target.value)} class="block p-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-100 dark:placeholder-gray-100 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={`잔액 : ${detailAsset.availableToken} ${poolInfos[id].poolToken}`} required  />
+                            <button onClick={maxDepositHandler}  class="text-white absolute right-2.5 bottom-2.5 bg-blue-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Max</button>
+                        </div>
+                      </>
+                      :
+                      <>
+                      <div class="relative">
+                      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                      </div>
+                      <input type="number" value={withdrawalAmount} onChange={e => setWithdrawalAmount(e.target.value)} class="block p-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-100 dark:placeholder-gray-100 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={`잔액 : ${detailAsset.investedToken} ${poolInfos[id].poolToken}`} required  />
+                      <button onClick={maxWithdrawerHandler}  class="text-white absolute right-2.5 bottom-2.5 bg-blue-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Max</button>
+                      </div>
+                      </>
+                    }
+                  </div>              
               </div>
-              <div style={{textAlign:"center"}}>
-              <Link to="interaction">
-                <button type="button" data-modal-target="crypto-modal" data-modal-toggle="crypto-modal" class="w-200 text-white ml-1 bg-primary-700 hover:bg-gray-100 border border-gray-200 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
-                    예치 / 인출하기 
+
+              {/* maxWithdrawerHandler */}
+
+
+
+
+          <div style={{marginTop:"20px"}}></div>
+            <div style={{textAlign:"right"}}>
+              <div style={{marginTop:"30px"}}></div>
+              {selection === "예치" ? 
+                <button onClick={requestDeposit} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <span style={{width:"30px"}}>예치하기</span>
                 </button>
-                </Link>
+                :
+                poolInfos[id].unstakingOption === 2 ?
+                <div style={{display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
+                <button onClick={requestSwap} style={{width:"30%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <span style={{width:"30px"}}>스왑 (즉시)</span>
+                </button>
+                <button onClick={requestWithdrawal} style={{width:"65%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <span style={{width:"30px"}}>인출 (7일 소요)</span>
+                </button>
                 </div>
+                :
+                poolInfos[id].unstakingOption === 1 ?
+                <button onClick={requestWithdrawal} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  <span style={{width:"30px"}}>인출하기</span>
+                </button>
+                :
+                <button onClick={requestWithdrawal} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <span style={{width:"30px"}}>인출 (7일 소요)</span>
+                </button>
+              }
+              </div>
 
             </div>
+          </div>
+          </div>
+
+
+          <div style={{marginTop:"30px"}}></div>
+          <div class="block p-6 border border-gray-200 rounded-lg dark:hover:bg-gray-700">
+            <h5 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white">풀 상세정보</h5>
             <div class="mt-6 border-t border-gray-100">
               <dl class="divide-y divide-gray-100">
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                   <dt class="text-sm font-medium leading-6 text-gray-900">이름</dt>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">Hashed-Ozys 노드 스테이킹</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    {poolInfos[id].poolName}
+                  </dd>
                 </div>
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                   <dt class="text-sm font-medium leading-6 text-gray-900">타입</dt>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">Liquidity Staking</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                  {poolInfos[id].poolType}
+                  </dd>
                 </div>
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                   <dt class="text-sm font-medium leading-6 text-gray-900">상태</dt>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">자산 규모 : 353,100,000 원</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    풀 규모 : {TransScale(detailAsset.tvlKRW)}
+                  </dd>
                   <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"></dd>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">예치된 토큰 : 23,220 KLAY</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    예치된 토큰 : {Number(detailAsset.tvlToken.toFixed(0)).toLocaleString()} {poolInfos[id].poolToken}
+                  </dd>
                   <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"></dd>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">연 수익율 : 6.7 %</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    연 수익율 : {detailAsset.apr.toFixed(2)} %
+                  </dd>
                 </div>
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                   <dt class="text-sm font-medium leading-6 text-gray-900">정보</dt>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">운영사 : Ozys</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    운영사 : {poolInfos[id].info.operation}
+                  </dd>
                   <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"></dd>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">시작일자 : 2020년 3월 12일</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    시작일자 : {poolInfos[id].info.startDate}
+                  </dd>
                   <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"></dd>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">사고이력 : 0 회</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    사고이력 : {poolInfos[id].info.hackingHistory}
+                  </dd>
                   <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"></dd>
-                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">오딧여부 : 수행함</dd>
+                  <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                    오딧여부 : {poolInfos[id].info.auditPerformed}
+                  </dd>
                 </div>
               </dl>
             </div>
           </div>
-          <div style={{marginTop:"30px"}}></div>
+          </div>
             </SubTemplateBlockVertical>
           </OverBox>
         </div>
@@ -277,6 +432,24 @@ const loadAsset = async () => {
   </div>
     </>
   );
+}
+
+function TransScale(props) {
+
+  // console.log("props",props)
+
+  return (
+    <>
+      {props > 100000000 ?
+        " " + (props / 100000000).toFixed(2) + " 억원"
+        : props >  10000 ?
+        " " + (props / 10000).toFixed(2) + " 만원"
+        :
+        " " + props
+      }
+    </>
+  )
+
 }
 
 const ManageTitle = styled.div`
@@ -423,6 +596,29 @@ const SubTemplateBlockSub = styled.div`
     }
 `;
 
+
+const skeletonKeyframes = keyframes`
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+`;
+
+
+export const ProductSkeleton = styled.div`
+  display: inline-block;
+  height: ${props => props.height || "20px"};
+  width: ${props => props.width || "50%"};
+  animation: ${skeletonKeyframes} 1300ms ease-in-out infinite;
+  background-color: #eee;
+  background-image: linear-gradient( 100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 80% );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  margin-top: ${props => props.marginTop || "0"}
+`;
 
 
 
