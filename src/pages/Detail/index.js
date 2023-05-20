@@ -5,6 +5,7 @@ import react, {useState, useEffect} from "react";
 import { useDispatch , useSelector } from 'react-redux';
 import { useParams, useNavigate } from "react-router-dom";
 import {metamaskDepositExecutor, metamaskWithdrawalExecutor, metamaskSwapExecutor, metamaskOusdtDepositExecutor} from './metamaskExecutor.js';
+import {kaikasKlayDepositExecutor} from './kaikasExecutor.js';
 import icons from "assets/tokenIcons"
 import Swal from 'sweetalert2'
 
@@ -19,8 +20,6 @@ function Detail() {
   const [selection, setSelection] = useState("예치");
   const [depositAmount, setDepositAmount] = useState()
   const [withdrawalAmount, setWithdrawalAmount] = useState()
-
-  
 
   const userAccount = useSelector(state => state.account) // 지갑주소
   const walletProvider = useSelector(state => state.walletProvider) // 프로바이더
@@ -39,7 +38,6 @@ function Detail() {
 
 
   useEffect(() => {
-    console.log("depositAmount",depositAmount)
     loadAsset()
   }, [userAccount])
 
@@ -110,7 +108,7 @@ function Detail() {
           toast.addEventListener('mouseenter', Swal.stopTimer)
           toast.addEventListener('mouseleave', Swal.resumeTimer)
         }
-      })      
+      })
 
       setIsloading(true)
 
@@ -133,39 +131,41 @@ function Detail() {
 
       await loadAsset()
 
-
     } else if (walletProvider === "kaikas") {
-      const data = window.caver.klay.abi.encodeFunctionCall(
-        {
-          name: 'stake',
-          type: 'function',
-          inputs: []
-        },
-        []
-      )
-      await window.caver.klay
-      .sendTransaction({
-        type: 'SMART_CONTRACT_EXECUTION',
-        from: "0xc847D70D3Ceb7E543e7ede2aD0AC596E2fFbcEC8",
-        to: "0xf80f2b22932fcec6189b9153aa18662b15cc9c00",
-        data,
-        value: window.caver.utils.toPeb('1', 'KLAY'),
-        gas: 800000
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
       })
-      .once('transactionHash', (transactionHash) => {
-        console.log('txHash', transactionHash);
-        loadAsset()
+
+      setIsloading(true)
+
+      let trxReturn = {}
+      
+      if(poolInfos[id].poolToken === "KLAY"){
+        trxReturn = await kaikasKlayDepositExecutor(userAccount, id, depositAmount)
+      } else {
+        // trxReturn = await metamaskOusdtDepositExecutor(userAccount, id, depositAmount)
+      }
+
+      setIsloading(false)
+
+      Toast.fire({
+        icon: 'success',
+        title: '예치가 성공적으로 실행되었습니다.',
+        html: `<a href=https://scope.klaytn.com/tx/${trxReturn.transactionHash} target="_blank">상세내역보기</a>`
       })
-      .once('receipt', (receipt) => {
-          console.log('receipt', receipt);
-          loadAsset()
-        })
-      .once('error', (error) => {
-          console.log('error', error);
-          alert("지불에 실패하셨습니다.");
-      })
-    } else {
-      alert("지갑 연결이 필요합니다.")
+
+      await loadAsset()
+
+
     }
   }
 
@@ -280,8 +280,6 @@ function Detail() {
               </ul>
               }
 
-
-
           <div style={{marginTop:"20px"}}></div>
               <div className="p-2">
               <h5 class="mb-2 text-1xl font-medium tracking-tight text-black dark:text-white">
@@ -303,55 +301,59 @@ function Detail() {
                       </>
                       :
                       <>
-                      <div class="relative">
-                      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                      </div>
-                      <input type="number" value={withdrawalAmount} onChange={e => setWithdrawalAmount(e.target.value)} class="block p-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-100 dark:placeholder-gray-100 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={`잔액 : ${detailAsset.investedToken} ${poolInfos[id].poolToken}`} required  />
-                      <button onClick={maxWithdrawerHandler}  class="text-white absolute right-2.5 bottom-2.5 bg-blue-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Max</button>
-                      </div>
+                        <div class="relative">
+                          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                          </div>
+                          <input type="number" value={withdrawalAmount} onChange={e => setWithdrawalAmount(e.target.value)} class="block p-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-100 dark:placeholder-gray-100 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={`잔액 : ${detailAsset.investedToken} ${poolInfos[id].poolToken}`} required />
+                            <button onClick={maxWithdrawerHandler}  class="text-white absolute right-2.5 bottom-2.5 bg-blue-500 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Max</button>
+                          </div>
                       </>
                     }
                   </div>              
               </div>
 
-              {/* maxWithdrawerHandler */}
-
-
-
-
           <div style={{marginTop:"20px"}}></div>
             <div style={{textAlign:"right"}}>
               <div style={{marginTop:"30px"}}></div>
-              {selection === "예치" ? 
-                <button onClick={requestDeposit} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    <span style={{width:"30px"}}>예치하기</span>
-                </button>
-                :
-                poolInfos[id].unstakingOption === 2 ?
-                <div style={{display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
-                <button onClick={requestSwap} style={{width:"30%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    <span style={{width:"30px"}}>스왑 (즉시)</span>
-                </button>
-                <button onClick={requestWithdrawal} style={{width:"65%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    <span style={{width:"30px"}}>인출 (7일 소요)</span>
-                </button>
-                </div>
-                :
-                poolInfos[id].unstakingOption === 1 ?
-                <button onClick={requestWithdrawal} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                  <span style={{width:"30px"}}>인출하기</span>
-                </button>
-                :
-                <button onClick={requestWithdrawal} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    <span style={{width:"30px"}}>인출 (7일 소요)</span>
-                </button>
-              }
-              </div>
+                {selection === "예치" ? 
+                  poolInfos[id].isLinked ? 
+                    <button onClick={requestDeposit} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <span style={{width:"30px"}}>예치하기</span>
+                    </button>
+                    :
+                    <button onClick={()=>window.open(poolInfos[id].linkUrl)} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                      <span style={{width:"30px"}}> 서비스 이동</span>
+                    </button>
+                  :
+                  poolInfos[id].unstakingOption === 2 ?
+                    poolInfos[id].isLinked  ? 
+                    <div style={{display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
+                      <button onClick={requestSwap} style={{width:"30%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                          <span style={{width:"30px"}}>스왑 (즉시)</span>
+                      </button>
+                      <button onClick={requestWithdrawal} style={{width:"65%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                          <span style={{width:"30px"}}>인출 (7일 소요)</span>
+                      </button>
+                    </div>
+                    :
+                    <button onClick={()=>window.open(poolInfos[id].linkUrl)} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                      <span style={{width:"30px"}}>서비스 이동</span>
+                    </button>
 
+                  :
+                  poolInfos[id].unstakingOption === 1 ?
+                  <button onClick={requestWithdrawal} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <span style={{width:"30px"}}>인출하기</span>
+                  </button>
+                  :
+                  <button onClick={requestWithdrawal} style={{width:"100%"}} type="submit" class="py-2.5 px-3 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-800 focus:ring-2 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                      <span style={{width:"30px"}}>인출 (7일 소요)</span>
+                  </button>
+                }
+              </div>
             </div>
           </div>
           </div>
-
 
           <div style={{marginTop:"30px"}}></div>
           <div class="block p-6 border border-gray-200 rounded-lg dark:hover:bg-gray-700">

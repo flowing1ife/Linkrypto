@@ -16,7 +16,7 @@ const initialState = {
   chainProvier: "klaytn",
   walletConnectModal: false,
   walletManageModal: false,
-  chainManageModal: false,
+  chainManageModal: false
 };
 
 const WalletReducer = (state = initialState, action) => {

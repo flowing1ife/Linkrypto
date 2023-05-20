@@ -73,6 +73,9 @@
   "0x74ba03198fed2b15a51af242b9c63faf3c8f4d34": {
     "poolName": "Klaymore",
     "poolType": "Lending",
+    "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "unstakingOption": 1,
     "info": {
       "operation": "ozys",
@@ -95,6 +98,8 @@
     "poolName": "BiFi 랜딩",
     "poolType": "Lending",
     "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "unstakingOption": 1,
     "info": {
       "operation": "ozys",
@@ -106,6 +111,9 @@
   "0x0795aea6948fc1d31809383edc4183b220abd71f": {
     "poolName": "Jump - everstake 노드 스테이킹",
     "poolType": "Liquidity Staking",
+    "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "info": {
       "operation": "ozys",
       "startDate": "2023년 01년 02일",
@@ -116,6 +124,9 @@
   "0xe33337cb6fbb68954fe1c3fde2b21f56586632cd": {
     "poolName": "Hashed-Ozys 노드 스테이킹",
     "poolType": "Liquidity Staking",
+    "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "unstakingOption": 2,
     "info": {
       "operation": "ozys",
@@ -128,6 +139,8 @@
     "poolName": "Swapscanner",
     "poolType": "Liquidity Staking",
     "poolToken": "KLAY",
+    "isLinked": false,
+    "linkUrl": "https://swapscanner.io/ko/staking",
     "unstakingOption": 2,
     "info": {
       "operation": "swapscanner",
@@ -152,6 +165,8 @@
     "poolName": "kokoa finance",
     "poolType": "Lending",
     "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "info": {
       "operation": "ozys",
       "startDate": "2023년 01년 02일",
@@ -174,6 +189,8 @@
     "poolName": "Hankyung (Klaystation)",
     "poolType": "Liquidity Staking",
     "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "info": {
       "operation": "ozys",
       "startDate": "2023년 01년 02일",
@@ -185,6 +202,8 @@
     "poolName": "FSN (Klaystation)",
     "poolType": "Liquidity Staking",
     "poolToken": "KLAY",
+    "isLinked": true,
+    "linkUrl": "",
     "info": {
       "operation": "ozys",
       "startDate": "2023년 01년 02일",

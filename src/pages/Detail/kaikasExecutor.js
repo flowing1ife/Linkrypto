@@ -12,8 +12,168 @@ const Toast = Swal.mixin({
       toast.addEventListener('mouseleave', Swal.resumeTimer)
     }
   })
-  
+
+const kaikasKlayDepositExecutor = async (accountAddress, targetContract, amount) => {
+
+    const userAddress = accountAddress
+    const protocolAddress = targetContract
+    const depositAmount = amount
+
+    let transactionInfo = {}
+
+    switch (protocolAddress) {
+        case '0xe33337cb6fbb68954fe1c3fde2b21f56586632cd': // 1 - klaystation : hashed - ozys             
+            transactionInfo = await klaystationKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        case '0xeffa404dac6ba720002974c54d57b20e89b22862': // 2 - klaystation : hankyung             
+            transactionInfo = await klaystationKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        case '0x0795aea6948fc1d31809383edc4183b220abd71f': // 3 - klaystation : jump - everstate             
+            transactionInfo = await klaystationKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        case '0x962cdb28e662b026df276e5ee7fdf13a06341d68': // 4 - klaystation : FSN             
+            transactionInfo = await klaystationKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        case '0x74ba03198fed2b15a51af242b9c63faf3c8f4d34': // 5 - klaymore       
+            transactionInfo = await klaymoreKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        case '0x829fcfb6a6eea9d14eb4c14fac5b29874bdbad13': // 6 - bifi       
+            transactionInfo = await bifiKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        case '0x7087d5a9e3203d39ec825d02d92f66ed3203b18a': // 7 - kokoa       
+            transactionInfo = await kokoaKaikasDeposit(userAddress, protocolAddress, depositAmount)
+            break;
+        default:
+            console.log(`Sorry, we are out of ${protocolAddress}.`);
+    }
+
+
+    // 
+
+    console.log("transactionInfo",transactionInfo)
+
+    const web3Return = await window.caver.klay
+      .sendTransaction(transactionInfo)
+      .once('transactionHash', (transactionHash) => {
+        console.log('txHash', transactionHash);
+        Toast.fire({
+            icon: 'success',
+            title: '예치 신청이 성공적으로 완료되었습니다.',
+          })
+      })
+      .once('receipt', (receipt) => {
+          console.log('receipt', receipt);
+        })
+      .once('error', (error) => {
+          console.log('error', error);
+          alert("지불에 실패하셨습니다.");
+      })
+
+      return web3Return
+        
+}
+
+async function klaystationKaikasDeposit (addr, contAddr, amount) {
+
+    const abi = {name: 'stakeKlay',type: 'function', inputs: [{"name": "address","type": "address"}]}
+    const inputArray = [addr]
+
+    const data = window.caver.klay.abi.encodeFunctionCall(abi, inputArray)      
+
+      return {
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: addr,
+        to: contAddr,
+        data,
+        value: window.caver.utils.toPeb(amount.toString(), 'KLAY'),
+        gas: 800000
+    }
+
+}
+
+async function klaymoreKaikasDeposit (addr, contAddr, amount) {
+
+    const abi = {name: 'stakeKlay',type: 'function', inputs: [{"name": "address","type": "address"}]}
+    const inputArray = [addr]
+
+    const data = window.caver.klay.abi.encodeFunctionCall(abi, inputArray)      
+
+      return {
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: addr,
+        to: contAddr,
+        data,
+        value: window.caver.utils.toPeb(amount.toString(), 'KLAY'),
+        gas: 500000
+    }
+
+}
+
+async function bifiKaikasDeposit (addr, contAddr, amount) {
+
+    let tokenAmount = 0;
+    let klayAmount = 0;
+
+    if (contAddr === "0x829fcfb6a6eea9d14eb4c14fac5b29874bdbad13") {
+        tokenAmount = 0;
+        klayAmount = amount * 1e+18
+    }
+
+    const abi = {name: 'deposit',type: 'function', inputs: [{"name": "amount","type": "uint256"},{"name": "flag","type": "bool"}]};
+    const amountBN = window.caver.utils.toPeb(amount.toString(), 'KLAY');
+    const abiInput =[amountBN, 0];
+
+    const data = window.caver.klay.abi.encodeFunctionCall(abi, abiInput)      
+
+      return {
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: addr,
+        to: contAddr,
+        data,
+        value: amountBN,
+        gas: 500000
+    }
+
+
+    // const web3 = new Web3(window.ethereum);
+    // const data = await web3.eth.abi.encodeFunctionCall(protocolABI,abiInput)
+
+    // if(contAddr === "0x829fcfb6a6eea9d14eb4c14fac5b29874bdbad13"){
+    //     return {
+    //         from: addr,
+    //         to: contAddr,
+    //         data,
+    //         value: klayAmount,
+    //         gas: 400000
+    //     }
+    // }
+
+}
+
+async function kokoaKaikasDeposit (addr, contAddr, amount) {
+
+    const abi = {name: 'stakeAndBorrow',type: 'function', inputs: [{"name": "uint256","type": "uint256"}]}
+    const inputArray = [0]
+
+    const data = window.caver.klay.abi.encodeFunctionCall(abi, inputArray)      
+
+      return {
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: addr,
+        to: contAddr,
+        data,
+        value: window.caver.utils.toPeb(amount.toString(), 'KLAY'),
+        gas: 2000000
+    }
+    
+}
+
+
+
+
 const metamaskSwapExecutor = async () => {
+
+    
 
 }
 
@@ -48,10 +208,6 @@ const metamaskOusdtDepositExecutor = async (accountAddress, targetContract, amou
     .sendTransaction(transactionInfo)
     .once('transactionHash', (transactionHash) => {
       console.log('txHash', transactionHash);
-      Toast.fire({
-        icon: 'success',
-        title: '예치 신청이 성공적으로 완료되었습니다.',
-      })
     })
     .once('receipt', (receipt) => {
         console.log('receipt', receipt);
@@ -166,10 +322,6 @@ const metamaskDepositExecutor = async (accountAddress, targetContract, amount) =
     .sendTransaction(transactionInfo)
     .once('transactionHash', (transactionHash) => {
       console.log('txHash', transactionHash);
-      Toast.fire({
-        icon: 'success',
-        title: '예치 신청이 성공적으로 완료되었습니다.',
-      })
     })
     .once('receipt', (receipt) => {
         console.log('receipt', receipt);
@@ -241,6 +393,10 @@ const metamaskWithdrawalExecutor = async (accountAddress, targetContract, amount
     .sendTransaction(transactionInfo)
     .once('transactionHash', (transactionHash) => {
       console.log('txHash', transactionHash);
+      Toast.fire({
+        icon: 'success',
+        title: '예치 신청이 성공적으로 완료되었습니다.',
+      })
     })
     .once('receipt', (receipt) => {
         console.log('receipt', receipt);
@@ -382,6 +538,7 @@ async function kokoaDeposit (addr, contAddr, amount) {
         }
     }
 }
+
 
 async function klaybankDeposit (addr, contAddr, amount) {
     const web3 = new Web3(window.ethereum);
@@ -566,9 +723,5 @@ async function klayswapWithdrawal (addr, contAddr, amount) {
 }
 
 export {
-    metamaskDepositExecutor,
-    metamaskWithdrawalExecutor,
-    metamaskSwapExecutor,
-    metamaskOusdtDepositExecutor,
-    metamaskOusdtWithdrawalExecutor
+    kaikasKlayDepositExecutor
 }

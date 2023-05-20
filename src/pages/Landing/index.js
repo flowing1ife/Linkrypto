@@ -1,6 +1,6 @@
 import {Link} from "react-router-dom"
 import styled, { keyframes } from 'styled-components';
-import bifrost from "../../assets/ci/BIFROST_Logo.jpeg"
+import bifrost from "../../assets/ci/BIFROST_Logo.svg"
 
 import 'App.css'; 
 import {
