@@ -1,4 +1,5 @@
-# Linkrypto : Multichain crypto asset management service
+# Linkrypto
+# Multichain crypto asset management service
 
 Frontend landing page for Glitch Hackerton 2023. (Bifrost track)
 
