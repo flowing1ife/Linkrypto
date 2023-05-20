@@ -2,7 +2,6 @@ import hashed from 'assets/ci/hashed.png'
 import 'App.css'; 
 import {Link} from "react-router-dom"
 import styled, { keyframes } from 'styled-components';
-import WalletTokenDetailTable from "pages/Portfolio/WalletTokenDetailTable.js"
 import React from "react";
 import icons from "assets/tokenIcons"
 import react, {useState, useEffect} from "react";
